@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-// import { JwtPayload } from './auth/jwt/jwt-payload.interface';
-import { Roles } from 'src/users/entities/Roles.entity';
-import { Users } from './users/entities/Users.entity';
+// import { Roles } from 'src/users/entities/Roles.entity';
+// import { Users } from './users/entities/Users.entity';
+import { ROLES_KEY } from './roles.decorator';
+import { JwtPayload } from 'src/auth/jwt/jwt-payload.interface';
+import { UserRoles } from './user_role.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -17,15 +19,18 @@ export class RolesGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const roles = this.reflector.get<Roles[]>('roles', context.getHandler());
+    const roles = this.reflector.get<UserRoles[]>(
+      ROLES_KEY,
+      context.getHandler(),
+    );
     if (!roles) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
-    const user: Users = request.user;
+    const user: JwtPayload = request.user;
 
-    if (!user || !roles.some((role) => user?.roles?.includes(role))) {
+    if (!user || !roles.some((role) => user.roles.includes(role))) {
       throw new ForbiddenException(
         'You do not have permission to access this resource',
       );

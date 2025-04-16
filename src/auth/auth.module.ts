@@ -11,6 +11,7 @@ import { Users } from 'src/users/entities/Users.entity';
 
 @Module({
   imports: [
+    ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -19,9 +19,9 @@ export class Roles {
   @Column('enum', {
     name: 'name',
     unique: true,
-    enum: UserRoles, //['passenger', 'terminal_manager', 'admin']
+    enum: UserRoles, //['passenger', 'terminal_manager', 'admin', 'guest']
   })
-  name: UserRoles; //'passenger' | 'terminal_manager' | 'admin'
+  name: UserRoles; //'passenger' | 'terminal_manager' | 'admin' | 'guest'
 
   @ManyToMany(() => Users, (users) => users.roles)
   @JoinTable({

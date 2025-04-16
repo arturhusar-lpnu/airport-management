@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { UsersRepository } from '../users/repositories/users.repository';
 import { UserErrors } from './enums/user-errors.enum';
-import { UserRoles } from 'src/users/user_role.enum';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt/jwt-payload.interface';
@@ -53,7 +52,8 @@ export class AuthService {
     });
 
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
-      const payload: JwtPayload = { username, email, roles: user.roles };
+      const roles = user.roles.map((r) => r.name);
+      const payload: JwtPayload = { username, email, roles };
       const accessToken: string = this.jwtService.sign(payload);
       return { accessToken };
     } else {

@@ -2,7 +2,9 @@ import { Repository, DataSource } from 'typeorm';
 import { Users } from '../entities/Users.entity';
 import { AuthCredentialsDto } from '@auth/dtos/auth-credentials.dto';
 import * as bcrypt from 'bcrypt';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class UsersRepository extends Repository<Users> {
   constructor(private dataSource: DataSource) {
     super(Users, dataSource.createEntityManager());

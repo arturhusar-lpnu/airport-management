@@ -11,6 +11,8 @@ import { FlightSeats } from './FlightSeats.entity';
 import { Aircrafts } from 'src/airlines/entities/Aircrafts.entity';
 import { Airlines } from 'src/airlines/entities/Airlines.entity';
 import { Tickets } from 'src/tickets/entities/Tickets.entity';
+import { FlightType } from '../enums/flight-type.enum';
+import { FlightStatus } from '../enums/flight_status.enum';
 
 @Index('flights_pkey', ['id'], { unique: true })
 @Entity('flights', { schema: 'public' })
@@ -21,14 +23,14 @@ export class Flights {
   @Column('character varying', { name: 'flight_name', length: 100 })
   flightName: string;
 
-  @Column('enum', { name: 'flight_type', enum: ['arriving', 'departing'] })
-  flightType: 'arriving' | 'departing';
+  @Column('enum', { name: 'flight_type', enum: FlightType })
+  flightType: FlightType;
 
   @Column('enum', {
     name: 'status',
-    enum: ['scheduled', 'delayed', 'landed', 'cancelled'],
+    enum: FlightStatus,
   })
-  status: 'scheduled' | 'delayed' | 'landed' | 'cancelled';
+  status: FlightStatus;
 
   @Column('timestamp without time zone', {
     name: 'schedule_time',
