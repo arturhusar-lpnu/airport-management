@@ -4,9 +4,11 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Terminals } from 'src/terminals/entities/Terminals.entity';
+import { Flights } from 'src/flights/entities/Flights.entity';
 
 @Index('unique_terminals', ['gateNumber', 'terminalId'], { unique: true })
 @Index('gates_pkey', ['id'], { unique: true })
@@ -26,4 +28,7 @@ export class Gates {
   })
   @JoinColumn([{ name: 'terminal_id', referencedColumnName: 'terminalId' }])
   terminal: Terminals;
+
+  @OneToMany(() => Flights, (flight) => flight.gate)
+  flights: Flights[];
 }

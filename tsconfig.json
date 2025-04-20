@@ -23,6 +23,8 @@
       "@flights/*": ["src/flights/*"],
       "@luggage/*": ["src/luggage/*"],
       "@tickets/*": ["src/tickets/*"]
-    }
+    },
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   }
 }
