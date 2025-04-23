@@ -9,6 +9,16 @@ import { RegisterTicketDto } from 'src/tickets/dtos/register_ticket.dto';
 import { FlightsRepository } from 'src/flights/repositories/flights.repository';
 import { GetFlightsFilterDto } from 'src/flights/dtos/get-flight-filter.dto';
 import { GatesRepository } from './repositories/gate.repository';
+import { GetGatesFilterDto } from './dtos/get_gates_filter.dto';
+import { UsersRepository } from 'src/users/repositories/users.repository';
+import { TicketsRepository } from 'src/tickets/repositories/tickets.repository';
+import { FlightsSeatsRepository } from 'src/flights/repositories/flight_seats.repository';
+import { UpdateLuggageDto } from 'src/luggage/dto/update_luggage.dto';
+import { RegisteredTickets } from 'src/tickets/entities/RegisteredTickets.entity';
+import { Flights } from 'src/flights/entities/Flights.entity';
+import { WeatherService, WeatherReport } from 'src/weather-api/weather.service';
+import { GetReportDto } from 'src/weather-api/dtos/get_report.dto';
+import { UpdateRegisteredTicketDto } from 'src/tickets/dtos/update_registered.dto';
 @Injectable()
 export class GatesService {
   constructor(
@@ -17,23 +27,59 @@ export class GatesService {
     private ticketRepo: TicketsRepository,
     private luggageRepo: LuggageRepository,
     private registerTicketRepo: RegisterTicketsRepository,
-    private passengerRepo: PassengerRepository,
-    private flightSeatsRepo: FlightSeatsRepository,
+    private passengerRepo: UsersRepository,
+    private flightSeatsRepo: FlightsSeatsRepository,
+    private weatherService: WeatherService,
   ) {}
 
-  public async getGates(): Promise<Gates[]> {
-    return await this.gateRepo.getGates();
+  public async getGates(filter: GetGatesFilterDto): Promise<Gates[]> {
+    return await this.gateRepo.getGates(filter);
   }
 
-  public async getGateById(gatedId: number): Promise<Gates> {
+  public async getGate(gatedId: number): Promise<Gates> {
     return await this.gateRepo.getGate(gatedId);
   }
 
-  public async generateReport(gateId: number): Promise<ReportDto> {
+  public async generateReport(gateId: number, reportTime: GetReportDto) {
     const filter = new GetFlightsFilterDto();
+    const { from, to } = reportTime;
     filter.gateId = gateId;
+    filter.scheduleTimeFrom = from;
+    filter.scheduleTimeTo = to;
 
     const flights = await this.flightsRepo.getFlights(filter);
+
+    const groups: Record<
+      string,
+      Record<
+        string,
+        (Flights & { shouldRearrange: boolean } & { weather: WeatherReport })[]
+      >
+    > = {};
+
+    for (const flight of flights) {
+      const type = flight.flightType;
+
+      const time = flight.scheduleTime;
+      const dateKey = time.toISOString().split('T')[0];
+
+      if (!groups[type]) groups[type] = {};
+      if (!groups[type][dateKey]) groups[type][dateKey] = [];
+
+      const weatherReport: WeatherReport =
+        await this.weatherService.getWeatherReport(flight.scheduleTime);
+
+      const shouldRearrange =
+        this.weatherService.shouldRearangeFlight(weatherReport);
+
+      groups[type][dateKey].push({
+        ...flight,
+        weather: weatherReport,
+        shouldRearrange,
+      });
+    }
+
+    return groups;
   }
 
   // public async assignGateManager( // TODO if have time
@@ -43,8 +89,8 @@ export class GatesService {
   //   return this.gateRepo.assignGateManager(id, gateManagerDto);
   // }
 
-  public async getFlightSeats(): Promise<FlightSeats[]> {
-    return await this.flightSeatsRepo.getAvailableSeats();
+  public async getFlightSeats(flightId: number): Promise<FlightSeats[]> {
+    return await this.flightSeatsRepo.getSeats(flightId);
   }
 
   public async registerTicket(
@@ -66,8 +112,6 @@ export class GatesService {
 
     const registered = await this.registerTicketRepo.save(registeredTicket);
 
-    await this.flightSeatsRepo.registerSeat(registered.id);
-
     return registered;
   }
 
@@ -88,10 +132,6 @@ export class GatesService {
 
     const passenger = await this.passengerRepo.getPassenger(passengerId);
 
-    if (!passenger) {
-      throw new NotFoundException(`No Passenger found with id ${passengerId}`);
-    }
-
     const luggage = this.luggageRepo.create({
       id,
       weight,
@@ -109,20 +149,30 @@ export class GatesService {
     luggageId: number,
     updateLuggageDto: UpdateLuggageDto,
   ) {
-    return this.luggageRepo.updateLuggage(luggageId, updateLuggageDto);
+    return await this.luggageRepo.updateLuggage(luggageId, updateLuggageDto);
   }
 
   public async updateRegisteredTicket(
     ticketId: number,
-    updateTicketDto: UpdateRegisteredTicketDto,
-  ) {
-    await this.registerTicketRepo.getTicket(ticketId);
+    updateTicket: UpdateRegisteredTicketDto,
+    user: Users,
+  ): Promise<RegisteredTickets> {
+    const { seatId } = updateTicket;
+    const registered = await this.registerTicketRepo.getTicket(ticketId);
 
-    return this.registerTicketRepo.updateTicket(ticketId, updateTicketDto);
+    const seat = await this.flightSeatsRepo.getSeat(seatId);
+
+    registered.seat = seat;
+    registered.registeredAt = new Date();
+    registered.registeredBy = user;
+
+    await this.registerTicketRepo.save<RegisteredTickets>(registered);
+
+    return registered;
   }
 
   public async removeTicket(ticketId: number) {
-    return this.registerTicketRepo.removeTicket(ticketId);
+    return await this.registerTicketRepo.removeTicket(ticketId);
   }
 
   public async removeLuggage(luggageId: number) {

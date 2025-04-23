@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Gates } from '../entities/Gates.entity';
+import { GetGatesFilterDto } from '../dtos/get_gates_filter.dto';
 
 @Injectable()
 export class GatesRepository extends Repository<Gates> {
@@ -8,8 +9,17 @@ export class GatesRepository extends Repository<Gates> {
     super(Gates, dataSource.createEntityManager());
   }
 
-  public async getGates() {
-    return await this.find();
+  public async getGates(filter: GetGatesFilterDto): Promise<Gates[]> {
+    const query = this.createQueryBuilder('gates');
+    const { gateNumber } = filter;
+
+    if (gateNumber) {
+      query.andWhere('LOWER(gates.gate_number) LIKE LOWER(:gateNumber)', {
+        gateNumber,
+      });
+    }
+
+    return await query.getMany();
   }
 
   public async getGate(id: number): Promise<Gates> {

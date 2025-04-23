@@ -1,13 +1,7 @@
 import { LuggageStatus } from '../enums/luggage_status.enum';
-import {
-  IsOptional,
-  IsEnum,
-  IsNumber,
-  IsNumberString,
-  Matches,
-} from 'class-validator';
+import { IsOptional, IsEnum, IsNumberString, Matches } from 'class-validator';
 
-export class GetLuggagesFilterDto {
+export class UpdateLuggageDto {
   @IsOptional()
   @IsNumberString()
   @Matches(/^\d{1,3}(\.\d{1,2})?$/, {
@@ -19,12 +13,4 @@ export class GetLuggagesFilterDto {
   @IsOptional()
   @IsEnum(LuggageStatus)
   status?: LuggageStatus;
-
-  @IsOptional()
-  @IsNumber()
-  passengerId?: number;
-
-  @IsOptional()
-  @IsNumber()
-  ticketId?: number;
 }
