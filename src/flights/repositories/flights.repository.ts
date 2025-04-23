@@ -7,6 +7,7 @@ import { DataSource, Repository } from 'typeorm';
 import { Flights } from 'src/flights/entities/Flights.entity';
 import { FlightStatus } from '../enums/flight_status.enum';
 import { GetFlightsFilterDto } from '../dtos/get-flight-filter.dto';
+import { CreateFlightDto } from '../dtos/create-flight.dto';
 
 @Injectable()
 export class FlightsRepository extends Repository<Flights> {
@@ -15,8 +16,14 @@ export class FlightsRepository extends Repository<Flights> {
   }
 
   public async getFlights(filterDto: GetFlightsFilterDto): Promise<Flights[]> {
-    const { status, type, searchName, scheduleTimeFrom, scheduleTimeTo } =
-      filterDto;
+    const {
+      status,
+      type,
+      searchName,
+      scheduleTimeFrom,
+      scheduleTimeTo,
+      gateId,
+    } = filterDto;
 
     const query = this.createQueryBuilder('flights');
     if (status) {
@@ -42,6 +49,11 @@ export class FlightsRepository extends Repository<Flights> {
         searchName: `%${searchName}%`,
       });
     }
+
+    if (gateId) {
+      query.andWhere('flihts.gate_id = :gateId', { gateId });
+    }
+
     try {
       const flights = await query.getMany();
       return flights;
@@ -63,7 +75,6 @@ export class FlightsRepository extends Repository<Flights> {
 
     return found;
   }
-
   public async updateStatus(
     id: number,
     status: FlightStatus,

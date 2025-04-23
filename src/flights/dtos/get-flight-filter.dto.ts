@@ -1,4 +1,10 @@
-import { IsOptional, IsEnum, IsString, IsDate } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsString,
+  IsDate,
+  IsNumber,
+} from 'class-validator';
 import { FlightType } from '../enums/flight-type.enum';
 import { FlightStatus } from '../enums/flight_status.enum';
 
@@ -22,4 +28,8 @@ export class GetFlightsFilterDto {
   @IsOptional()
   @IsDate()
   scheduleTimeTo?: Date;
+
+  @IsOptional()
+  @IsNumber()
+  gateId?: number;
 }
