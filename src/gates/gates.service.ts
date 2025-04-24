@@ -130,7 +130,7 @@ export class GatesService {
       throw new NotFoundException('Ticket is not registered yet');
     }
 
-    const passenger = await this.passengerRepo.getPassenger(passengerId);
+    const passenger = await this.passengerRepo.getPassengerById(passengerId);
 
     const luggage = this.luggageRepo.create({
       id,

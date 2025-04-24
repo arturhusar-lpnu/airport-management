@@ -9,6 +9,7 @@ import {
 import { Luggages } from 'src/luggage/entities/Luggages.entity';
 import { RegisteredTickets } from 'src/tickets/entities/RegisteredTickets.entity';
 import { Roles } from 'src/users/entities/Roles.entity';
+import { Tickets } from 'src/tickets/entities/Tickets.entity';
 
 @Index('users_email_key', ['email'], { unique: true })
 @Index('users_pkey', ['id'], { unique: true })
@@ -38,4 +39,7 @@ export class Users {
 
   @ManyToMany(() => Roles, (roles) => roles.users)
   roles: Roles[];
+
+  @OneToMany(() => Tickets, (tickets) => tickets.passenger)
+  tickets: Tickets[];
 }

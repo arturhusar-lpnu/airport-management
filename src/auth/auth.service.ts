@@ -20,6 +20,7 @@ export class AuthService {
 
   public async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     try {
+      console.log(authCredentialsDto);
       return await this.usersRepository.createUser(authCredentialsDto);
     } catch (err) {
       if (+err.code == UserErrors.DuplicateName) {
@@ -33,6 +34,7 @@ export class AuthService {
 
         throw new ConflictException('Username or email already in use');
       } else {
+        console.log(err);
         throw new InternalServerErrorException();
       }
     }

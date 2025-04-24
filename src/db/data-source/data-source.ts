@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import ormConfig from '../data-source/ormConfig.json';
 
+export const AppDataSource = new DataSource(ormConfig as any);
+
 // export const createDataSource = async (
 //   configService: ConfigService,
 // ): Promise<DataSource> => {
@@ -19,5 +21,3 @@ import ormConfig from '../data-source/ormConfig.json';
 //     migrationsTableName: 'airport-migrations',
 //   });
 // };
-
-export const AppDataSource = new DataSource(ormConfig as any);

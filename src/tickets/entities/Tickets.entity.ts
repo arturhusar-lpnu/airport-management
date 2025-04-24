@@ -9,17 +9,15 @@ import {
 } from 'typeorm';
 import { RegisteredTickets } from './RegisteredTickets.entity';
 import { Flights } from 'src/flights/entities/Flights.entity';
+import { Users } from 'src/users/entities/Users.entity';
+import { SeatClass } from '../enums/seat_class.enum';
 
 @Index('tickets_pkey', ['id'], { unique: true })
-@Index('f_idx_tickets_pass', ['passengerId'], {})
 @Index('idx_price', ['price'], {})
 @Entity('tickets', { schema: 'public' })
 export class Tickets {
   @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number;
-
-  @Column('integer', { name: 'passenger_id' })
-  passengerId: number;
 
   @Column('numeric', { name: 'price', precision: 6, scale: 2 })
   price: string;
@@ -34,9 +32,9 @@ export class Tickets {
   @Column('enum', {
     name: 'seat_class',
     nullable: true,
-    enum: ['economy', 'business'],
+    enum: SeatClass,
   })
-  seatClass: 'economy' | 'business' | null;
+  seatClass: SeatClass | null;
 
   @OneToMany(
     () => RegisteredTickets,
@@ -47,4 +45,8 @@ export class Tickets {
   @ManyToOne(() => Flights, (flights) => flights.tickets)
   @JoinColumn([{ name: 'flight_id', referencedColumnName: 'id' }])
   flight: Flights;
+
+  @ManyToOne(() => Users, (users) => users.tickets)
+  @JoinColumn([{ name: 'passenger_id', referencedColumnName: 'id' }])
+  passenger: Users;
 }

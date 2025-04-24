@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { FlightStatus } from '../enums/flight_status.enum';
 import { FlightType } from '../enums/flight-type.enum';
+import { Type } from 'class-transformer';
 
 export class CreateFlightDto {
   @IsString()
@@ -22,6 +23,7 @@ export class CreateFlightDto {
   type: FlightType;
 
   @IsDate()
+  @Type(() => Date)
   scheduleTime: Date;
 
   @IsNumber()
@@ -29,4 +31,7 @@ export class CreateFlightDto {
 
   @IsNumber()
   airlineId: number;
+
+  @IsNumber()
+  gateId: number;
 }

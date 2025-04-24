@@ -14,6 +14,7 @@ import { Tickets } from 'src/tickets/entities/Tickets.entity';
 import { FlightType } from '../enums/flight-type.enum';
 import { FlightStatus } from '../enums/flight_status.enum';
 import { Gates } from 'src/gates/entities/Gates.entity';
+import { FlightPrices } from './FlightPrices.entity';
 
 @Index('flights_pkey', ['id'], { unique: true })
 @Entity('flights', { schema: 'public' })
@@ -41,6 +42,9 @@ export class Flights {
 
   @OneToMany(() => FlightSeats, (flightSeats) => flightSeats.flight)
   flightSeats: FlightSeats[];
+
+  @OneToMany(() => FlightPrices, (flightPrices) => flightPrices.flight)
+  flightPrices: FlightPrices[];
 
   @ManyToOne(() => Aircrafts, (aircrafts) => aircrafts.flights)
   @JoinColumn([{ name: 'aircraft_id', referencedColumnName: 'id' }])
