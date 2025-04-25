@@ -35,13 +35,15 @@ export class FlightsRepository extends Repository<Flights> {
     }
 
     if (scheduleTimeFrom) {
-      query.andWhere('flights.schedule_time >= :timeFrom', {
+      query.andWhere('flights.schedule_time >= :scheduleTimeFrom', {
         scheduleTimeFrom,
       });
     }
 
     if (scheduleTimeTo) {
-      query.andWhere('flights.schedule_time <= :timeTo', { scheduleTimeTo });
+      query.andWhere('flights.schedule_time <= :scheduleTimeTo', {
+        scheduleTimeTo,
+      });
     }
 
     if (searchName) {
@@ -51,7 +53,7 @@ export class FlightsRepository extends Repository<Flights> {
     }
 
     if (gateId) {
-      query.andWhere('flihts.gate_id = :gateId', { gateId });
+      query.andWhere('flights.gate_id = :gateId', { gateId });
     }
 
     try {
