@@ -37,12 +37,12 @@ export class WeatherService {
 
     const response$ = this.httpService.get(url, { params });
     const response = await firstValueFrom(response$);
-
     const weather = response.data;
+    // console.log(weather.forecast.forecastday);
 
-    const findDate = `${dateString}  ${hour}`;
+    const findDate = `${dateString} ${hour}`;
 
-    const hourInfo = weather.forecast.forecastday.hour.find(
+    const hourInfo = weather.forecast.forecastday[0].hour.find(
       (h: WeatherReport) => h.time == findDate,
     );
 
