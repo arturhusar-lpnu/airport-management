@@ -23,6 +23,7 @@ import { GetGatesFilterDto } from './dtos/get_gates_filter.dto';
 import { UpdateLuggageDto } from 'src/luggage/dto/update_luggage.dto';
 import { GetReportDto } from 'src/weather-api/dtos/get_report.dto';
 import { UpdateRegisteredTicketDto } from 'src/tickets/dtos/update_registered.dto';
+import { JwtPayload } from 'src/auth/jwt/jwt-payload.interface';
 
 @UseGuards(AuthGuard(), RolesGuard)
 @Controller('gates')
@@ -68,7 +69,7 @@ export class GatesController {
   @Roles(UserRoles.TerminalManager)
   public async registerPassengerTicket(
     @Body() registerTicketDto: RegisterTicketDto,
-    @GetUser() user: Users,
+    @GetUser() user: JwtPayload,
   ) {
     return this.gatesService.registerTicket(registerTicketDto, user);
   }

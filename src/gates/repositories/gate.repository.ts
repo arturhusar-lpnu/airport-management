@@ -11,11 +11,12 @@ export class GatesRepository extends Repository<Gates> {
 
   public async getGates(filter: GetGatesFilterDto): Promise<Gates[]> {
     const query = this.createQueryBuilder('gates');
+
     const { gateNumber } = filter;
 
     if (gateNumber) {
       query.andWhere('LOWER(gates.gate_number) LIKE LOWER(:gateNumber)', {
-        gateNumber,
+        gateNumber: `%${gateNumber}%`,
       });
     }
 

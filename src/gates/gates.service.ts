@@ -19,6 +19,7 @@ import { Flights } from 'src/flights/entities/Flights.entity';
 import { WeatherService, WeatherReport } from 'src/weather-api/weather.service';
 import { GetReportDto } from 'src/weather-api/dtos/get_report.dto';
 import { UpdateRegisteredTicketDto } from 'src/tickets/dtos/update_registered.dto';
+import { JwtPayload } from 'src/auth/jwt/jwt-payload.interface';
 @Injectable()
 export class GatesService {
   constructor(
@@ -95,7 +96,7 @@ export class GatesService {
 
   public async registerTicket(
     registerTicketDto: RegisterTicketDto,
-    user: Users,
+    user: JwtPayload,
   ) {
     const { seatId, ticketId } = registerTicketDto;
 
@@ -103,10 +104,12 @@ export class GatesService {
 
     const seat = await this.flightSeatsRepo.getSeat(seatId);
 
+    const passenger = await this.passengerRepo.getPassenger(user);
+
     const registeredTicket = this.registerTicketRepo.create({
       seat,
-      registeredBy: user,
-      registeredAt: Date.now(),
+      registeredBy: passenger,
+      registeredAt: new Date(),
       ticket,
     });
 
@@ -116,7 +119,7 @@ export class GatesService {
   }
 
   public async registerLuggage(luggageDto: CreateLuggageDto) {
-    const { id, weight, status, passengerId, ticketId } = luggageDto;
+    const { weight, status, passengerId, ticketId } = luggageDto;
 
     const ticket = await this.ticketRepo.getTicket(ticketId);
 
@@ -133,10 +136,9 @@ export class GatesService {
     const passenger = await this.passengerRepo.getPassengerById(passengerId);
 
     const luggage = this.luggageRepo.create({
-      id,
       weight,
       status,
-      ticket,
+      ticket: registered,
       passenger,
     });
 
@@ -155,7 +157,7 @@ export class GatesService {
   public async updateRegisteredTicket(
     ticketId: number,
     updateTicket: UpdateRegisteredTicketDto,
-    user: Users,
+    user: JwtPayload,
   ): Promise<RegisteredTickets> {
     const { seatId } = updateTicket;
     const registered = await this.registerTicketRepo.getTicket(ticketId);
@@ -164,7 +166,8 @@ export class GatesService {
 
     registered.seat = seat;
     registered.registeredAt = new Date();
-    registered.registeredBy = user;
+    const terminalManager = await this.passengerRepo.getTerminalManager(user);
+    registered.registeredBy = terminalManager;
 
     await this.registerTicketRepo.save<RegisteredTickets>(registered);
 

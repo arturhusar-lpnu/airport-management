@@ -31,7 +31,7 @@ export class UsersRepository extends Repository<Users> {
   }
 
   public async getPassengerById(id: number) {
-    const found = await this.findOne({ where: { id } });
+    const found = await this.findOne({ where: { id }, relations: ['roles'] });
 
     if (!found) {
       throw new NotFoundException(`Passenger with id : ${id} not found`);
@@ -59,6 +59,24 @@ export class UsersRepository extends Repository<Users> {
 
     if (hasPassengerRole.length == 0) {
       throw new UnauthorizedException('User is not a passenger');
+    }
+
+    return found;
+  }
+
+  public async getTerminalManager(user: JwtPayload) {
+    const found = await this.findOne({ where: { email: user.email } });
+
+    if (!found) {
+      throw new NotFoundException(`Manager not found`);
+    }
+
+    const hasPassengerRole = user.roles.filter(
+      (r) => r == UserRoles.TerminalManager,
+    );
+
+    if (hasPassengerRole.length == 0) {
+      throw new UnauthorizedException('User is not a terminal manager');
     }
 
     return found;

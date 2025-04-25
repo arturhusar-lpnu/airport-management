@@ -2,9 +2,6 @@ import { LuggageStatus } from '../enums/luggage_status.enum';
 import { IsNumberString, IsEnum, IsNumber, Matches } from 'class-validator';
 
 export class CreateLuggageDto {
-  @IsNumber()
-  id: number;
-
   @IsNumberString()
   @Matches(/^\d{1,3}(\.\d{1,2})?$/, {
     message:
