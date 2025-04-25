@@ -7,7 +7,7 @@ import { ViewEntity, ViewColumn } from 'typeorm';
 })
 export class FlightAvailability {
   @ViewColumn()
-  flight_id: number;
+  id: number;
 
   @ViewColumn()
   flight_name: string;

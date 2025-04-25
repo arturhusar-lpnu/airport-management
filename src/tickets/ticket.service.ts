@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Users } from 'src/users/entities/Users.entity';
 import { CreateTicketDto } from './dtos/create_ticket.dto';
 import { FlightsRepository } from 'src/flights/repositories/flights.repository';
@@ -6,7 +10,7 @@ import { UsersRepository } from 'src/users/repositories/users.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Tickets } from './entities/Tickets.entity';
-import { AppDataSource } from 'src/db/data-source/data-source';
+import { Logger } from '@nestjs/common';
 import { FlightAvailability } from 'src/flights/entities/available_flights.view.entity';
 import { JwtPayload } from 'src/auth/jwt/jwt-payload.interface';
 
@@ -50,12 +54,16 @@ export class TicketService {
   }
 
   public async getAvailableFlights() {
-    const queryRunner = AppDataSource.createQueryRunner();
-    // const availableFlights = await this.availFlightsRepo.find();
-    const availableFlights = await queryRunner.manager.query(
-      `SELECT * FROM flight_availability`,
-    );
-
-    return availableFlights;
+    try {
+      const availableFlights = await this.availFlightsRepo.find({
+        where: { available: 1 },
+      });
+      return availableFlights;
+    } catch (error) {
+      Logger.error('Error fetching available flights:', error);
+      throw new InternalServerErrorException(
+        'Failed to retrieve available flights',
+      );
+    }
   }
 }

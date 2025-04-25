@@ -30,13 +30,13 @@ export class TicketController {
     return this.ticketService.buyTicket(newTicket, user);
   }
 
-  @Get('/:id')
-  public async getTicket(@Param('id') id: number) {
-    return this.ticketService.getTicket(id);
-  }
-
-  @Get('/available-flights')
+  @Get('/details/available')
   public async getAvailableFlights() {
     return this.ticketService.getAvailableFlights();
+  }
+
+  @Get('/ticket/:id')
+  public async getTicket(@Param('id') id: number) {
+    return this.ticketService.getTicket(id);
   }
 }
