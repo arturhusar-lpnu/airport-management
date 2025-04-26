@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersRepository } from '../users/repositories/users.repository';
@@ -10,6 +11,8 @@ import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt/jwt-payload.interface';
 import * as bcrypt from 'bcrypt';
+import { SignUpCredentialsDto } from './dtos/signup-credentials.dto';
+import { SignInCredentialsDto } from './dtos/signin-credentials.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,9 +21,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  public async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+  public async signUp(authCredentialsDto: SignUpCredentialsDto): Promise<void> {
     try {
-      console.log(authCredentialsDto);
+      Logger.verbose(`Adding a new user with data : ${authCredentialsDto}`);
       return await this.usersRepository.createUser(authCredentialsDto);
     } catch (err) {
       if (+err.code == UserErrors.DuplicateName) {
@@ -34,20 +37,20 @@ export class AuthService {
 
         throw new ConflictException('Username or email already in use');
       } else {
-        console.log(err);
+        Logger.error(`Error signing up ${err}`);
         throw new InternalServerErrorException();
       }
     }
   }
 
   public async signIn(
-    authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ accessToken: string }> {
-    const { username, email, password } = authCredentialsDto;
+    authCredentialsDto: SignInCredentialsDto,
+  ): Promise<{ data: { token: string } }> {
+    Logger.verbose(`Signing in with data : ${authCredentialsDto}`);
+    const { email, password } = authCredentialsDto;
 
     const user = await this.usersRepository.findOne({
       where: {
-        username,
         email,
       },
       relations: ['roles'],
@@ -55,9 +58,11 @@ export class AuthService {
 
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
       const roles = user.roles.map((r) => r.name);
+      const username = user.username;
       const payload: JwtPayload = { username, email, roles };
       const accessToken: string = this.jwtService.sign(payload);
-      return { accessToken };
+
+      return { data: { token: accessToken } };
     } else {
       throw new UnauthorizedException('Check your login credentials');
     }
