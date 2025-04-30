@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { Flights } from 'src/flights/entities/Flights.entity';
+import { Flights, flightRelations } from 'src/flights/entities/Flights.entity';
 import { FlightStatus } from '../enums/flight_status.enum';
 import { GetFlightsFilterDto } from '../dtos/get-flight-filter.dto';
 import { CreateFlightDto } from '../dtos/create-flight.dto';
@@ -57,6 +57,12 @@ export class FlightsRepository extends Repository<Flights> {
     }
 
     try {
+      for (const relation of flightRelations) {
+        query.leftJoinAndSelect(`flights.${relation}`, relation);
+      }
+      // query.leftJoinAndSelect('flights.gate', 'gate');
+      query.leftJoinAndSelect('gate.terminal', 'terminals');
+      query.orderBy('flights.schedule_time', 'ASC');
       const flights = await query.getMany();
       return flights;
     } catch (error) {
@@ -69,7 +75,20 @@ export class FlightsRepository extends Repository<Flights> {
   }
 
   public async getFlight(id: number): Promise<Flights> {
-    const found = await this.findOne({ where: { id } });
+    const query = this.createQueryBuilder('flights');
+    for (const relation of flightRelations) {
+      query.leftJoinAndSelect(`flights.${relation}`, relation);
+    }
+    // query.leftJoinAndSelect('flights.gate', 'gate');
+    query.leftJoinAndSelect('aircraft.model', 'aircraft_models');
+
+    query.leftJoinAndSelect('gate.terminal', 'terminals');
+
+    query.where('flights.id = :id', { id });
+
+    query.orderBy('flights.schedule_time', 'ASC');
+
+    const found = await query.getOne();
 
     if (!found) {
       throw new NotFoundException(`No such flight with id : ${id} found`);

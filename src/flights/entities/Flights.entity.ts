@@ -15,6 +15,17 @@ import { FlightType } from '../enums/flight-type.enum';
 import { FlightStatus } from '../enums/flight_status.enum';
 import { Gates } from 'src/gates/entities/Gates.entity';
 import { FlightPrices } from './FlightPrices.entity';
+import { Airports } from './Airports';
+
+export const flightRelations = [
+  'flightSeats',
+  'flightPrices',
+  'aircraft',
+  'airline',
+  'tickets',
+  'airport',
+  'gate',
+];
 
 @Index('flights_pkey', ['id'], { unique: true })
 @Entity('flights', { schema: 'public' })
@@ -27,6 +38,13 @@ export class Flights {
 
   @Column('enum', { name: 'flight_type', enum: FlightType })
   flightType: FlightType;
+
+  @Column('character varying', {
+    name: 'flight_number',
+    nullable: true,
+    length: 50,
+  })
+  flightNumber: string | null;
 
   @Column('enum', {
     name: 'status',
@@ -56,6 +74,10 @@ export class Flights {
 
   @OneToMany(() => Tickets, (tickets) => tickets.flight)
   tickets: Tickets[];
+
+  @ManyToOne(() => Airports, (airports) => airports.flights)
+  @JoinColumn([{ name: 'airport_id', referencedColumnName: 'id' }])
+  airport: Airports;
 
   @ManyToOne(() => Gates, (gate) => gate.flights, { nullable: false })
   @JoinColumn([{ name: 'gate_id', referencedColumnName: 'id' }])

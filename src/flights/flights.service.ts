@@ -11,11 +11,14 @@ import { NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Gates } from 'src/gates/entities/Gates.entity';
+import { Airports } from './entities/Airports';
 @Injectable()
 export class FlightsService {
   constructor(
     @InjectRepository(Gates)
     private gatesRepo: Repository<Gates>,
+    @InjectRepository(Airports)
+    private airportRepo: Repository<Airports>,
     private flightsRepo: FlightsRepository,
     private airlineRepo: AirlinesRepository,
     private aircraftRepo: AircraftsRepository,
@@ -23,6 +26,16 @@ export class FlightsService {
 
   public async getFlights(filterDto: GetFlightsFilterDto): Promise<Flights[]> {
     return await this.flightsRepo.getFlights(filterDto);
+  }
+
+  public async getFlight(id: number): Promise<Flights> {
+    return this.flightsRepo.getFlight(id);
+  }
+
+  public async getPrices(id: number) {
+    const flight = await this.getFlight(id);
+
+    return flight.flightPrices;
   }
 
   public async createFlight(
@@ -35,6 +48,7 @@ export class FlightsService {
       flightName,
       aircraftId,
       airlineId,
+      airportId,
       gateId,
     } = createFlightDto;
 
@@ -48,6 +62,12 @@ export class FlightsService {
 
     if (!gate) throw new NotFoundException('Gate not found');
 
+    const airport = await this.airportRepo.findOne({
+      where: { id: airportId },
+    });
+
+    if (!airport) throw new NotFoundException('Airport not found');
+
     const flight = this.flightsRepo.create({
       flightName,
       status,
@@ -55,6 +75,7 @@ export class FlightsService {
       scheduleTime,
       aircraft,
       airline,
+      airport,
       gate,
     });
 

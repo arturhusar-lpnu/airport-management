@@ -33,5 +33,8 @@ export class CreateFlightDto {
   airlineId: number;
 
   @IsNumber()
+  airportId: number;
+
+  @IsNumber()
   gateId: number;
 }

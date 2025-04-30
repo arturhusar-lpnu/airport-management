@@ -20,6 +20,7 @@ import { Roles } from 'src/users/entities/Roles.entity';
 import { UserRoles } from './users/user_role.enum';
 import { AircraftModels } from './airlines/entities/AircraftModels.entity';
 import { FlightAvailability } from './flights/entities/available_flights.view.entity';
+import { Airports } from './flights/entities/Airports';
 // @Module({
 //   imports: [
 //     ConfigModule.forRoot({
@@ -123,6 +124,7 @@ import { FlightAvailability } from './flights/entities/available_flights.view.en
           Terminals,
           Roles,
           FlightAvailability,
+          Airports,
         ],
         synchronize: false,
       }),

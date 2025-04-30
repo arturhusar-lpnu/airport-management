@@ -25,6 +25,9 @@ export class FlightPrices {
   })
   createdAt: Date | null;
 
+  @Column('numeric', { name: 'price', precision: 6, scale: 2 })
+  price: string;
+
   @ManyToOne(() => Flights, (flights) => flights.flightPrices)
   @JoinColumn([{ name: 'flight_id', referencedColumnName: 'id' }])
   flight: Flights;

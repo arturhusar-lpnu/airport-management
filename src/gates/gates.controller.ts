@@ -50,28 +50,13 @@ export class GatesController {
     return this.gatesService.generateReport(gateId, reportTime);
   }
 
-  // @Post('/add-gate')
-  // @Roles(UserRoles.Admin)
-  // public async addGate(@Body() createGateDto: CreateGateDto): Promise<Gates> {
-  //   return this.gatesService.addGate(createGateDto);
-  // }
-
-  // @Post('/:id/assign-new-manager')
-  // @Roles(UserRoles.Admin)
-  // public async assignGateManager(
-  //   @Param('id') id: number,
-  //   @Body() gateManagerDto: GateManagerDto,
-  // ): Promise<void> {
-  //   return this.gatesService.assignGateManager(id, gateManagerDto);
-  // }
-
   @Post('/:id/register-ticket/')
   @Roles(UserRoles.TerminalManager)
   public async registerPassengerTicket(
     @Body() registerTicketDto: RegisterTicketDto,
-    @GetUser() user: JwtPayload,
+    //user: JwtPayload,
   ) {
-    return this.gatesService.registerTicket(registerTicketDto, user);
+    return this.gatesService.registerTicket(registerTicketDto);
   }
 
   @Post('/:gateId/register-luggage')

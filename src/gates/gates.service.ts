@@ -96,15 +96,15 @@ export class GatesService {
 
   public async registerTicket(
     registerTicketDto: RegisterTicketDto,
-    user: JwtPayload,
+    //user: JwtPayload,
   ) {
-    const { seatId, ticketId } = registerTicketDto;
+    const { seatId, ticketId, passengerId } = registerTicketDto;
 
     const ticket = await this.ticketRepo.getTicket(ticketId);
 
     const seat = await this.flightSeatsRepo.getSeat(seatId);
 
-    const passenger = await this.passengerRepo.getPassenger(user);
+    const passenger = await this.passengerRepo.getPassengerById(passengerId);
 
     const registeredTicket = this.registerTicketRepo.create({
       seat,

@@ -9,4 +9,8 @@ export class RegisterTicketDto {
   @IsNumber()
   @Type(() => Number)
   ticketId: number;
+
+  @IsNumber()
+  @Type(() => Number)
+  passengerId: number;
 }

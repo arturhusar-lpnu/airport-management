@@ -32,6 +32,16 @@ export class FlightsController {
     return this.flightsService.getFlights(filterDto);
   }
 
+  @Get('/:id')
+  public async getFlight(@Param('id') id: number): Promise<Flights> {
+    return this.flightsService.getFlight(id);
+  }
+
+  @Get('/:id/prices')
+  public async getPrices(@Param('id') id: number) {
+    return this.flightsService.getPrices(id);
+  }
+
   @Post('/new-flight')
   @Roles(UserRoles.Admin)
   public async createFlight(

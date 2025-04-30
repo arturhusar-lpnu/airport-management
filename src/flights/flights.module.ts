@@ -10,10 +10,11 @@ import { AircraftsRepository } from 'src/airlines/repositories/aircrafts.reposit
 import { AirlinesRepository } from 'src/airlines/repositories/airlines.repository';
 import { AuthModule } from 'src/auth/auth.module';
 import { Gates } from 'src/gates/entities/Gates.entity';
+import { Airports } from './entities/Airports';
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Flights, Airlines, Aircrafts, Gates]),
+    TypeOrmModule.forFeature([Flights, Airlines, Aircrafts, Gates, Airports]),
   ],
   providers: [
     FlightsService,
