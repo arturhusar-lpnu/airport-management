@@ -20,79 +20,12 @@ import { Roles } from 'src/users/entities/Roles.entity';
 import { UserRoles } from './users/user_role.enum';
 import { AircraftModels } from './airlines/entities/AircraftModels.entity';
 import { FlightAvailability } from './flights/entities/available_flights.view.entity';
-import { Airports } from './flights/entities/Airports';
-// @Module({
-//   imports: [
-//     ConfigModule.forRoot({
-//       envFilePath: [`.env.config`],
-//     }),
-//     TypeOrmModule.forRootAsync({
-//       imports: [ConfigModule],
-//       inject: [ConfigService],
-//       useFactory: async (configService: ConfigService) => ({
-//         type: 'postgres',
-//         host: configService.get('DB_HOST'),
-//         port: configService.get('DB_PORT'),
-//         username: configService.get('DB_USERNAME'),
-//         password: configService.get('DB_PASSWORD'),
-//         database: configService.get('DB_DATABASE'),
-//         entities: [
-//           Users,
-//           Luggages,
-//           Flights,
-//           Tickets,
-//           RegisteredTickets,
-//           FlightSeats,
-//           Gates,
-//           Aircrafts,
-//           AircraftModels,
-//           Airlines,
-//           FlightPrices,
-//           Terminals,
-//           Roles,
-//           FlightAvailability,
-//         ],
-//         synchronize: true,
-//       }),
-//       // useFactory: async (configService: ConfigService) => ({
-//       //   type: 'postgres',
-//       //   synchronize: true,
-//       //   host: configService.get('DB_HOST'),
-//       //   port: configService.get('DB_PORT'),
-//       //   username: configService.get('DB_USERNAME'),
-//       //   password: configService.get('DB_PASSWORD'),
-//       //   database: configService.get('DB_DATABASE'),
-//       // }),
-//       // useFactory: async (configService: ConfigService) => {
-//       //   const host = configService.get('DB_HOST');
-//       //   const port = configService.get('DB_PORT');
-//       //   const username = configService.get('DB_USERNAME');
-//       //   const password = configService.get('DB_PASSWORD');
-//       //   const database = configService.get('DB_DATABASE');
-//       //   return {
-//       //     type: 'postgres',
-//       //     synchronize: true,
-//       //     host,
-//       //     port,
-//       //     username,
-//       //     password,
-//       //     database,
-//       //   };
-//       // },
-//     }),
-//     AuthModule,
-//     FlightsModule,
-//     TicketModule,
-//     GatesModule,
-//   ],
-// })
-// export class AppModule {}
-
-//     {
-//     // const dataSource = await createDataSource(configService);
-//     // return dataSource.options;
-//   },
-// }),
+import { Airports } from './flights/entities/Airports.entity';
+import { SeatAvailability } from './flights/entities/SeatsAvailability.view.entity';
+import { Registration } from './gates/entities/Registration.entity';
+import { GateWorkload } from './stats/entities/GateWorkloads.entity';
+import { MonthlyFlightStats } from './stats/entities/MonthlyFlightStats.entity';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -125,6 +58,10 @@ import { Airports } from './flights/entities/Airports';
           Roles,
           FlightAvailability,
           Airports,
+          SeatAvailability,
+          Registration,
+          GateWorkload,
+          MonthlyFlightStats,
         ],
         synchronize: false,
       }),
@@ -133,6 +70,7 @@ import { Airports } from './flights/entities/Airports';
     FlightsModule,
     TicketModule,
     GatesModule,
+    StatsModule,
   ],
 })
 export class AppModule {}

@@ -30,6 +30,18 @@ export class UsersRepository extends Repository<Users> {
     await this.save(newUser);
   }
 
+  async getUser(email: string): Promise<Users> {
+    const found = await this.findOne({
+      where: { email },
+      relations: ['roles'],
+    });
+
+    if (!found) {
+      throw new NotFoundException(`User with email : ${email} not found`);
+    }
+    return found;
+  }
+
   public async getPassengerById(id: number) {
     const found = await this.findOne({ where: { id }, relations: ['roles'] });
 
@@ -62,6 +74,14 @@ export class UsersRepository extends Repository<Users> {
     }
 
     return found;
+  }
+
+  public async getPassengers() {
+    const passengers = await this.find({ relations: ['roles'] });
+
+    return passengers.filter((p) =>
+      p.roles.some((r) => r.name === UserRoles.Passenger),
+    );
   }
 
   public async getTerminalManager(user: JwtPayload) {

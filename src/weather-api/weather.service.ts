@@ -34,18 +34,50 @@ export class WeatherService {
       q,
       dt: dateString,
     };
-
     const response$ = this.httpService.get(url, { params });
     const response = await firstValueFrom(response$);
     const weather = response.data;
-
     const findDate = `${dateString} ${hour}`;
-
     const hourInfo = weather.forecast.forecastday[0].hour.find(
       (h: WeatherReport) => h.time == findDate,
     );
 
     return hourInfo;
+  }
+
+  public async sugestRearange(datatime: Date, hours: number = 12) {
+    // const dataTime = new Date(datatime.setHours(datatime.getHours() + 3));
+    // console.log(dataTime);
+    // const dates = this.generateHourlyTimestamps(dataTime.toISOString(), hours);
+    const dates = this.generateHourlyTimestamps(datatime.toISOString(), hours);
+    console.log(dates[0]);
+    const suitable: WeatherReport[] = [];
+
+    for (const date of dates) {
+      const weatherReport = await this.getWeatherReport(new Date(date));
+      if (!this.shouldRearangeFlight(weatherReport)) {
+        suitable.push(weatherReport);
+      }
+    }
+    if (suitable.length == 0)
+      throw new Error(
+        `No suitable hours found from ${datatime} in ${hours} hours`,
+      );
+
+    return suitable;
+  }
+
+  private generateHourlyTimestamps(startIso: string, hours: number): string[] {
+    const start = new Date(startIso);
+    const result: string[] = [];
+
+    for (let i = 0; i <= hours; i++) {
+      const current = new Date(start);
+      current.setHours(start.getHours() + i);
+      result.push(current.toISOString());
+    }
+
+    return result;
   }
 
   public shouldRearangeFlight(weather: WeatherReport): boolean {

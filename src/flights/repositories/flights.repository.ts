@@ -62,6 +62,7 @@ export class FlightsRepository extends Repository<Flights> {
       }
       // query.leftJoinAndSelect('flights.gate', 'gate');
       query.leftJoinAndSelect('gate.terminal', 'terminals');
+      query.leftJoinAndSelect('tickets.passenger', 'users');
       query.orderBy('flights.schedule_time', 'ASC');
       const flights = await query.getMany();
       return flights;
@@ -83,6 +84,7 @@ export class FlightsRepository extends Repository<Flights> {
     query.leftJoinAndSelect('aircraft.model', 'aircraft_models');
 
     query.leftJoinAndSelect('gate.terminal', 'terminals');
+    query.leftJoinAndSelect('tickets.passenger', 'users');
 
     query.where('flights.id = :id', { id });
 

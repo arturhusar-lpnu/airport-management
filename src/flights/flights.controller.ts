@@ -19,9 +19,9 @@ import { GetFlightsFilterDto } from './dtos/get-flight-filter.dto';
 import { UpdateFlighStatustDto } from './dtos/update-flight-status.dto';
 import { UpdateSheduleTimeDto } from './dtos/update-shedule-time.dto';
 import { Flights } from './entities/Flights.entity';
+import { UpdateFlighGateDto } from './dtos/update-flight-gate.dto';
 
 @Controller('flights')
-@UseGuards(AuthGuard(), RolesGuard)
 export class FlightsController {
   constructor(private flightsService: FlightsService) {}
 
@@ -42,7 +42,13 @@ export class FlightsController {
     return this.flightsService.getPrices(id);
   }
 
+  @Get('/:id/available-seats')
+  public async getSeats(@Param('id') id: number) {
+    return this.flightsService.getSeats(id);
+  }
+
   @Post('/new-flight')
+  @UseGuards(AuthGuard(), RolesGuard)
   @Roles(UserRoles.Admin)
   public async createFlight(
     @Body() createFlightDto: CreateFlightDto,
@@ -50,7 +56,18 @@ export class FlightsController {
     return this.flightsService.createFlight(createFlightDto);
   }
 
+  @Put('/:id/update-flight/gate')
+  @UseGuards(AuthGuard(), RolesGuard)
+  @Roles(UserRoles.Admin)
+  public async updateFlightGate(
+    @Body() updateFlightGateDto: UpdateFlighGateDto,
+    @Param('id') id: number,
+  ): Promise<Flights> {
+    return this.flightsService.updateFlightGate(id, updateFlightGateDto);
+  }
+
   @Put('/:id/update-flight/status')
+  @UseGuards(AuthGuard(), RolesGuard)
   @Roles(UserRoles.Admin)
   public async updateFlightStatus(
     @Body() updateStatusDto: UpdateFlighStatustDto,
@@ -60,6 +77,7 @@ export class FlightsController {
   }
 
   @Put('/:id/update-flight/shedule-time')
+  @UseGuards(AuthGuard(), RolesGuard)
   @Roles(UserRoles.Admin)
   public async updateFlightSheduleTime(
     @Body() updateTimeDto: UpdateSheduleTimeDto,
@@ -69,6 +87,7 @@ export class FlightsController {
   }
 
   @Delete('/:id/remove-flight')
+  @UseGuards(AuthGuard(), RolesGuard)
   @Roles(UserRoles.Admin)
   public async deleteFlight(@Param('id') id: number): Promise<void> {
     return this.flightsService.deleteFlight(id);

@@ -20,6 +20,7 @@ import { FlightSeats } from 'src/flights/entities/FlightSeats.entity';
 import { FlightsSeatsRepository } from 'src/flights/repositories/flight_seats.repository';
 import { WeatherService } from 'src/weather-api/weather.service';
 import { WeatherModule } from 'src/weather-api/weather.module';
+import { Registration } from './entities/Registration.entity';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { WeatherModule } from 'src/weather-api/weather.module';
       Gates,
       Users,
       FlightSeats,
+      Registration,
     ]),
     WeatherModule,
   ],
@@ -48,7 +50,6 @@ import { WeatherModule } from 'src/weather-api/weather.module';
       useFactory: (dataSource: DataSource) =>
         new RegisterTicketsRepository(dataSource),
     },
-    //RegisterTicketsRepository,
     UsersRepository,
     FlightsSeatsRepository,
   ],

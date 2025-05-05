@@ -4,7 +4,6 @@ import { FlightSeats } from 'src/flights/entities/FlightSeats.entity';
 import { LuggageRepository } from 'src/luggage/repositories/luggage.repository';
 import { CreateLuggageDto } from 'src/luggage/dto/create_luggage.dto';
 import { RegisterTicketsRepository } from 'src/tickets/repositories/register_tickets.repository';
-import { Users } from 'src/users/entities/Users.entity';
 import { RegisterTicketDto } from 'src/tickets/dtos/register_ticket.dto';
 import { FlightsRepository } from 'src/flights/repositories/flights.repository';
 import { GetFlightsFilterDto } from 'src/flights/dtos/get-flight-filter.dto';
@@ -20,9 +19,22 @@ import { WeatherService, WeatherReport } from 'src/weather-api/weather.service';
 import { GetReportDto } from 'src/weather-api/dtos/get_report.dto';
 import { UpdateRegisteredTicketDto } from 'src/tickets/dtos/update_registered.dto';
 import { JwtPayload } from 'src/auth/jwt/jwt-payload.interface';
+import { RemoveTicketDto } from 'src/tickets/dtos/remove_ticket.dto';
+import {
+  Registration,
+  RegistrationStatus,
+} from './entities/Registration.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { StartRegistrationDto } from './dtos/start_registration.dto';
+import { CloseRegistrationDto } from './dtos/close_registration.dto';
+import { SuggestionDto } from './dtos/suggestion.dto';
+import { GetFreeGatesDto } from './dtos/get_free_gates.dto';
 @Injectable()
 export class GatesService {
   constructor(
+    @InjectRepository(Registration)
+    private registerRepo: Repository<Registration>,
     private gateRepo: GatesRepository,
     private flightsRepo: FlightsRepository,
     private ticketRepo: TicketsRepository,
@@ -41,6 +53,16 @@ export class GatesService {
     return await this.gateRepo.getGate(gatedId);
   }
 
+  public async getRegisteredTickets(
+    gateId: number,
+  ): Promise<RegisteredTickets[]> {
+    const registered = await this.registerTicketRepo.find({
+      where: { gate: { id: gateId } },
+      relations: ['ticket', 'registeredBy', 'seat'],
+    });
+
+    return registered;
+  }
   public async generateReport(gateId: number, reportTime: GetReportDto) {
     const filter = new GetFlightsFilterDto();
     const { from, to } = reportTime;
@@ -49,12 +71,13 @@ export class GatesService {
     filter.scheduleTimeTo = to;
 
     const flights = await this.flightsRepo.getFlights(filter);
-
     const groups: Record<
       string,
       Record<
         string,
-        (Flights & { shouldRearrange: boolean } & { weather: WeatherReport })[]
+        ({ flight: Flights } & { shouldRearrange: boolean } & {
+          weather: WeatherReport;
+        })[]
       >
     > = {};
 
@@ -74,7 +97,7 @@ export class GatesService {
         this.weatherService.shouldRearangeFlight(weatherReport);
 
       groups[type][dateKey].push({
-        ...flight,
+        flight: flight,
         weather: weatherReport,
         shouldRearrange,
       });
@@ -83,22 +106,67 @@ export class GatesService {
     return groups;
   }
 
-  // public async assignGateManager( // TODO if have time
-  //   id: number,
-  //   gateManagerDto: GateManagerDto,
-  // ): Promise<void> {
-  //   return this.gateRepo.assignGateManager(id, gateManagerDto);
-  // }
+  public async getSuggestion(gateId: number, suggestion: SuggestionDto) {
+    const { from, hours } = suggestion;
+    return this.weatherService.sugestRearange(from, hours);
+  }
+
+  public async getPassengers() {
+    return this.passengerRepo.getPassengers();
+  }
+
+  public async startRegistration(
+    gateId: string,
+    startRegDto: StartRegistrationDto,
+  ) {
+    const { flightId, startedAt } = startRegDto;
+
+    const flight = await this.flightsRepo.getFlight(flightId);
+
+    const registration = this.registerRepo.create({
+      flight,
+      startedAt,
+      registrationStatus: RegistrationStatus.Open,
+    });
+
+    return await this.registerRepo.save(registration);
+  }
+
+  public async closeRegistration(gateId: string, close: CloseRegistrationDto) {
+    const { id, closedAt } = close;
+
+    const registration = await this.registerRepo.findOne({
+      where: { id },
+    });
+
+    if (!registration) throw new NotFoundException('Registration not found');
+
+    registration.closedAt = closedAt;
+
+    registration.registrationStatus = RegistrationStatus.Closed;
+
+    return await this.registerRepo.save(registration);
+  }
+
+  public async getFreeGates(dto: GetFreeGatesDto): Promise<Gates[]> {
+    const { date } = dto;
+    return this.gateRepo.getFreeGates(date);
+  }
 
   public async getFlightSeats(flightId: number): Promise<FlightSeats[]> {
     return await this.flightSeatsRepo.getSeats(flightId);
   }
 
   public async registerTicket(
+    gateId,
     registerTicketDto: RegisterTicketDto,
-    //user: JwtPayload,
+    user: JwtPayload,
   ) {
     const { seatId, ticketId, passengerId } = registerTicketDto;
+
+    const gate = await this.gateRepo.getGate(gateId);
+
+    const registeredBy = await this.passengerRepo.getUser(user.email);
 
     const ticket = await this.ticketRepo.getTicket(ticketId);
 
@@ -108,10 +176,15 @@ export class GatesService {
 
     const registeredTicket = this.registerTicketRepo.create({
       seat,
-      registeredBy: passenger,
+      registeredBy: registeredBy,
       registeredAt: new Date(),
       ticket,
+      gate,
     });
+
+    ticket.passenger = passenger;
+
+    await this.ticketRepo.save(ticket);
 
     const registered = await this.registerTicketRepo.save(registeredTicket);
 
@@ -174,7 +247,8 @@ export class GatesService {
     return registered;
   }
 
-  public async removeTicket(ticketId: number) {
+  public async removeTicket(removeTicketDto: RemoveTicketDto) {
+    const { ticketId } = removeTicketDto;
     return await this.registerTicketRepo.removeTicket(ticketId);
   }
 

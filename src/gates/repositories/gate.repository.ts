@@ -20,7 +20,24 @@ export class GatesRepository extends Repository<Gates> {
       });
     }
 
+    query.leftJoinAndSelect('gates.terminal', 'terminals');
     return await query.getMany();
+  }
+
+  public async getFreeGates(date: Date): Promise<Gates[]> {
+    const gates = await this.find({ relations: ['flights'] });
+    return gates.filter((g) =>
+      g.flights.every((f) => !this.isSameHour(f.scheduleTime, date)),
+    );
+  }
+
+  private isSameHour(d1: Date, d2: Date): boolean {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate() &&
+      d1.getHours() === d2.getHours()
+    );
   }
 
   public async getGate(id: number): Promise<Gates> {

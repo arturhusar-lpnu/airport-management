@@ -24,6 +24,12 @@ import { UpdateLuggageDto } from 'src/luggage/dto/update_luggage.dto';
 import { GetReportDto } from 'src/weather-api/dtos/get_report.dto';
 import { UpdateRegisteredTicketDto } from 'src/tickets/dtos/update_registered.dto';
 import { JwtPayload } from 'src/auth/jwt/jwt-payload.interface';
+import { RemoveTicketDto } from 'src/tickets/dtos/remove_ticket.dto';
+import { CloseRegistrationDto } from './dtos/close_registration.dto';
+import { StartRegistrationDto } from './dtos/start_registration.dto';
+import { SuggestionDto } from './dtos/suggestion.dto';
+import { WeatherReport } from 'src/weather-api/weather.service';
+import { GetFreeGatesDto } from './dtos/get_free_gates.dto';
 
 @UseGuards(AuthGuard(), RolesGuard)
 @Controller('gates')
@@ -31,6 +37,7 @@ export class GatesController {
   constructor(private gatesService: GatesService) {}
 
   @Get()
+  @Roles(UserRoles.TerminalManager, UserRoles.Admin)
   public async getGates(
     @Query() filterDto: GetGatesFilterDto,
   ): Promise<Gates[]> {
@@ -42,21 +49,63 @@ export class GatesController {
     return this.gatesService.getGate(gateId);
   }
 
+  @Get('/details/free-gates')
+  public async getFreeFligths(@Query() dto: GetFreeGatesDto): Promise<Gates[]> {
+    return this.gatesService.getFreeGates(dto);
+  }
+
+  @Get('/details/passengers')
+  public async getPassengers(): Promise<Users[]> {
+    return this.gatesService.getPassengers();
+  }
+
   @Get('/:id/report')
   public async getGateReport(
     @Param('id') gateId: number,
-    @Body() reportTime: GetReportDto,
+    @Query() reportTime: GetReportDto,
   ) {
     return this.gatesService.generateReport(gateId, reportTime);
+  }
+
+  @Get('/:id/report/sugest')
+  public async getSuggestion(
+    @Param('id') gateId: number,
+    @Query() suggestion: SuggestionDto,
+  ): Promise<WeatherReport[]> {
+    return this.gatesService.getSuggestion(gateId, suggestion);
+  }
+
+  @Get('/:id/registered-tickets')
+  public async getRegisteredTickets(@Param('id') gateId: number) {
+    return this.gatesService.getRegisteredTickets(gateId);
   }
 
   @Post('/:id/register-ticket/')
   @Roles(UserRoles.TerminalManager)
   public async registerPassengerTicket(
     @Body() registerTicketDto: RegisterTicketDto,
-    //user: JwtPayload,
+    @GetUser() user: JwtPayload,
+    @Param('id') gateId: number,
   ) {
-    return this.gatesService.registerTicket(registerTicketDto);
+    return this.gatesService.registerTicket(gateId, registerTicketDto, user);
+  }
+
+  @Post('/:gateId/start-registration')
+  @Roles(UserRoles.TerminalManager)
+  public async startRegistration(
+    @Param('gateId') gateId: string,
+    @Body() startRegDto: StartRegistrationDto,
+  ) {
+    return this.gatesService.startRegistration(gateId, startRegDto);
+  }
+
+  @Put('/:gateId/close-registration')
+  @Roles(UserRoles.TerminalManager)
+  public async closeRegistration(
+    @Param('gateId') gateId: string,
+    @Body() closeRegDto: CloseRegistrationDto,
+  ) {
+    return this.gatesService.closeRegistration(gateId, closeRegDto);
   }
 
   @Post('/:gateId/register-luggage')
@@ -91,8 +140,11 @@ export class GatesController {
 
   @Delete('/:gateId/registered-ticket/:ticketId/remove-ticket')
   @Roles(UserRoles.TerminalManager)
-  public async removeTicket(@Param('ticketId') ticketId: number) {
-    return this.gatesService.removeTicket(ticketId);
+  public async removeTicket(
+    @Param('ticketId') ticketId: number,
+    @Body() removeTicket: RemoveTicketDto,
+  ) {
+    return this.gatesService.removeTicket(removeTicket);
   }
 
   @Delete('/:gateId/registered-luggage/:luggageId/remove-luggage')

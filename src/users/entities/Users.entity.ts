@@ -42,4 +42,7 @@ export class Users {
 
   @OneToMany(() => Tickets, (tickets) => tickets.passenger)
   tickets: Tickets[];
+
+  @OneToMany(() => Tickets, (tickets) => tickets.purchasedBy)
+  purchasedTickets: Tickets[];
 }

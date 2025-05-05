@@ -26,23 +26,38 @@ export class TicketService {
   ) {}
 
   async buyTicket(
-    newTicket: CreateTicketDto,
+    newTickets: CreateTicketDto[],
     user: JwtPayload,
-  ): Promise<Tickets> {
-    const { price, seatClass, flightId } = newTicket;
-    const passenger = await this.usersRepo.getPassenger(user);
+  ): Promise<Tickets[]> {
+    const purchasedBy = await this.usersRepo.getUser(user.email);
 
-    const flight = await this.flightsRepo.getFlight(flightId);
+    const tickets: Tickets[] = [];
 
-    const ticket = this.ticketsRepo.create({
-      price,
-      seatClass,
-      flight,
-      passenger,
-      purchaseAt: new Date(),
+    for (const newTicket of newTickets) {
+      const { price, seatClass, flightId, passengerId } = newTicket;
+      const passenger = await this.usersRepo.getPassengerById(passengerId);
+      const flight = await this.flightsRepo.getFlight(flightId);
+
+      const ticket = this.ticketsRepo.create({
+        price,
+        seatClass,
+        flight,
+        passenger,
+        purchasedBy,
+        purchaseAt: new Date(),
+      });
+
+      const savedTicket = await this.ticketsRepo.save(ticket);
+      tickets.push(savedTicket);
+    }
+
+    return tickets;
+  }
+
+  public async getTickets(): Promise<Tickets[]> {
+    return await this.ticketsRepo.find({
+      relations: ['passenger'],
     });
-
-    return await this.ticketsRepo.save(ticket);
   }
 
   public async getTicket(id: number) {
@@ -52,7 +67,6 @@ export class TicketService {
 
     return found;
   }
-
   public async getAvailableFlights() {
     try {
       const availableFlights = await this.availFlightsRepo.find({

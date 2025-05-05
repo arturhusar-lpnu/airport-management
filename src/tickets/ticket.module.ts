@@ -9,11 +9,18 @@ import { Users } from 'src/users/entities/Users.entity';
 import { FlightsRepository } from 'src/flights/repositories/flights.repository';
 import { UsersRepository } from 'src/users/repositories/users.repository';
 import { FlightAvailability } from 'src/flights/entities/available_flights.view.entity';
+import { Gates } from 'src/gates/entities/Gates.entity';
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Tickets, Flights, Users, FlightAvailability]),
+    TypeOrmModule.forFeature([
+      Tickets,
+      Flights,
+      Users,
+      FlightAvailability,
+      Gates,
+    ]),
   ],
   controllers: [TicketController],
   providers: [TicketService, FlightsRepository, UsersRepository],

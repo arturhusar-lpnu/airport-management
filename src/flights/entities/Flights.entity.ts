@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { FlightSeats } from './FlightSeats.entity';
@@ -15,7 +16,8 @@ import { FlightType } from '../enums/flight-type.enum';
 import { FlightStatus } from '../enums/flight_status.enum';
 import { Gates } from 'src/gates/entities/Gates.entity';
 import { FlightPrices } from './FlightPrices.entity';
-import { Airports } from './Airports';
+import { Airports } from './Airports.entity';
+import { Registration } from 'src/gates/entities/Registration.entity';
 
 export const flightRelations = [
   'flightSeats',
@@ -25,6 +27,7 @@ export const flightRelations = [
   'tickets',
   'airport',
   'gate',
+  'registrations',
 ];
 
 @Index('flights_pkey', ['id'], { unique: true })
@@ -63,6 +66,9 @@ export class Flights {
 
   @OneToMany(() => FlightPrices, (flightPrices) => flightPrices.flight)
   flightPrices: FlightPrices[];
+
+  @OneToMany(() => Registration, (reg) => reg.flight)
+  registrations: Registration[];
 
   @ManyToOne(() => Aircrafts, (aircrafts) => aircrafts.flights)
   @JoinColumn([{ name: 'aircraft_id', referencedColumnName: 'id' }])

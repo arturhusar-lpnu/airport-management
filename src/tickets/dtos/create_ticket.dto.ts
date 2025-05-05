@@ -20,4 +20,7 @@ export class CreateTicketDto {
 
   @IsNumber()
   flightId: number;
+
+  @IsNumber()
+  passengerId: number;
 }

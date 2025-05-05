@@ -24,10 +24,15 @@ export class TicketController {
   @Post('/buy-ticket')
   @Roles(UserRoles.Passenger)
   public async buyTicket(
-    @Body() newTicket: CreateTicketDto,
+    @Body() newTickets: CreateTicketDto[],
     @GetUser() user,
-  ): Promise<Tickets> {
-    return this.ticketService.buyTicket(newTicket, user);
+  ): Promise<Tickets[]> {
+    return this.ticketService.buyTicket(newTickets, user);
+  }
+
+  @Get()
+  public async getTickets() {
+    return this.ticketService.getTickets();
   }
 
   @Get('/details/available')

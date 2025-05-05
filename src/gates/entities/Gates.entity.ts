@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Terminals } from 'src/terminals/entities/Terminals.entity';
 import { Flights } from 'src/flights/entities/Flights.entity';
+import { RegisteredTickets } from 'src/tickets/entities/RegisteredTickets.entity';
 
 @Index('unique_terminals', ['gateNumber', 'terminalId'], { unique: true })
 @Index('gates_pkey', ['id'], { unique: true })
@@ -31,4 +32,7 @@ export class Gates {
 
   @OneToMany(() => Flights, (flight) => flight.gate)
   flights: Flights[];
+
+  @OneToMany(() => RegisteredTickets, (ticket) => ticket.gate)
+  registeredTickets: RegisteredTickets[];
 }

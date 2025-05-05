@@ -11,6 +11,7 @@ import { Luggages } from 'src/luggage/entities/Luggages.entity';
 import { Users } from 'src/users/entities/Users.entity';
 import { FlightSeats } from 'src/flights/entities/FlightSeats.entity';
 import { Tickets } from './Tickets.entity';
+import { Gates } from 'src/gates/entities/Gates.entity';
 
 @Index('registered_tickets_pkey', ['id'], { unique: true })
 @Entity('registered_tickets', { schema: 'public' })
@@ -37,4 +38,8 @@ export class RegisteredTickets {
   })
   @JoinColumn([{ name: 'ticket_id', referencedColumnName: 'id' }])
   ticket: Tickets;
+
+  @ManyToOne(() => Gates, (gates) => gates.registeredTickets)
+  @JoinColumn([{ name: 'gate_id', referencedColumnName: 'id' }])
+  gate: Gates;
 }

@@ -49,4 +49,8 @@ export class Tickets {
   @ManyToOne(() => Users, (users) => users.tickets)
   @JoinColumn([{ name: 'passenger_id', referencedColumnName: 'id' }])
   passenger: Users;
+
+  @ManyToOne(() => Users, (users) => users.purchasedTickets)
+  @JoinColumn([{ name: 'purchased_by_id', referencedColumnName: 'id' }])
+  purchasedBy: Users;
 }

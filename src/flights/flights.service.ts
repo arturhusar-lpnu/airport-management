@@ -11,7 +11,10 @@ import { NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Gates } from 'src/gates/entities/Gates.entity';
-import { Airports } from './entities/Airports';
+import { Airports } from './entities/Airports.entity';
+import { SeatAvailability } from './entities/SeatsAvailability.view.entity';
+import { UpdateFlighGateDto } from './dtos/update-flight-gate.dto';
+import { AppDataSource } from 'src/db/data-source/data-source';
 @Injectable()
 export class FlightsService {
   constructor(
@@ -19,6 +22,8 @@ export class FlightsService {
     private gatesRepo: Repository<Gates>,
     @InjectRepository(Airports)
     private airportRepo: Repository<Airports>,
+    @InjectRepository(SeatAvailability)
+    private seatViewRepo: Repository<SeatAvailability>,
     private flightsRepo: FlightsRepository,
     private airlineRepo: AirlinesRepository,
     private aircraftRepo: AircraftsRepository,
@@ -36,6 +41,38 @@ export class FlightsService {
     const flight = await this.getFlight(id);
 
     return flight.flightPrices;
+  }
+
+  public async updateFlightGate(
+    id: number,
+    updateFlightGateDto: UpdateFlighGateDto,
+  ) {
+    const flight = await this.getFlight(id);
+
+    const { gateId } = updateFlightGateDto;
+
+    const gate = await this.gatesRepo.findOne({ where: { id: gateId } });
+
+    if (!gate) throw new NotFoundException('Gate not found');
+
+    await AppDataSource.transaction(async (manager) => {
+      flight.gate = gate;
+      await manager.save(flight);
+      await manager.query('CALL update_gate_workloads();');
+    });
+
+    return flight;
+  }
+
+  public async getSeats(id: number) {
+    const flight = await this.getFlight(id);
+
+    return this.seatViewRepo.find({
+      where: {
+        //is_taken: false,
+        flight_id: flight.id,
+      },
+    });
   }
 
   public async createFlight(

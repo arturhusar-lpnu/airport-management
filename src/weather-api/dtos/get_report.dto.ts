@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDate } from 'class-validator';
+import { IsDate, IsDateString } from 'class-validator';
 
 export class GetReportDto {
   @IsDate()
