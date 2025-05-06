@@ -30,6 +30,7 @@ import { StartRegistrationDto } from './dtos/start_registration.dto';
 import { SuggestionDto } from './dtos/suggestion.dto';
 import { WeatherReport } from 'src/weather-api/weather.service';
 import { GetFreeGatesDto } from './dtos/get_free_gates.dto';
+import { GetAvailableLuggageDto } from './dtos/get-available-luggage.dto';
 
 @UseGuards(AuthGuard(), RolesGuard)
 @Controller('gates')
@@ -106,6 +107,24 @@ export class GatesController {
     @Body() closeRegDto: CloseRegistrationDto,
   ) {
     return this.gatesService.closeRegistration(gateId, closeRegDto);
+  }
+
+  @Get('/:gateId/register-luggage/passengers')
+  @Roles(UserRoles.TerminalManager)
+  public async getAvailableLuggagePassengers(
+    @Param('gateId') gateId: number,
+    @Query() dto: GetAvailableLuggageDto,
+  ) {
+    return this.gatesService.getLuggagePassengers(gateId, dto);
+  }
+
+  @Get('/:gateId/register-luggage/weight')
+  @Roles(UserRoles.TerminalManager)
+  public async getMaxWeight(
+    @Param('gateId') gateId: number,
+    @Query() dto: GetAvailableLuggageDto,
+  ) {
+    return this.gatesService.getMaxLuggageWeight(dto);
   }
 
   @Post('/:gateId/register-luggage')

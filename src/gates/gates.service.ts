@@ -30,11 +30,16 @@ import { StartRegistrationDto } from './dtos/start_registration.dto';
 import { CloseRegistrationDto } from './dtos/close_registration.dto';
 import { SuggestionDto } from './dtos/suggestion.dto';
 import { GetFreeGatesDto } from './dtos/get_free_gates.dto';
+import { GetAvailableLuggageDto } from './dtos/get-available-luggage.dto';
+import { Users } from 'src/users/entities/Users.entity';
+import { MaxWeight } from 'src/flights/entities/MaxWeight.view.entity';
 @Injectable()
 export class GatesService {
   constructor(
     @InjectRepository(Registration)
     private registerRepo: Repository<Registration>,
+    @InjectRepository(MaxWeight)
+    private weightRepo: Repository<MaxWeight>,
     private gateRepo: GatesRepository,
     private flightsRepo: FlightsRepository,
     private ticketRepo: TicketsRepository,
@@ -58,7 +63,7 @@ export class GatesService {
   ): Promise<RegisteredTickets[]> {
     const registered = await this.registerTicketRepo.find({
       where: { gate: { id: gateId } },
-      relations: ['ticket', 'registeredBy', 'seat'],
+      relations: ['ticket', 'registeredBy', 'seat', 'luggage'],
     });
 
     return registered;
@@ -104,6 +109,45 @@ export class GatesService {
     }
 
     return groups;
+  }
+
+  public async getMaxLuggageWeight(dto: GetAvailableLuggageDto) {
+    const { flightId } = dto;
+
+    const flight = await this.flightsRepo.getFlight(flightId);
+
+    const found = await this.weightRepo.findOne({
+      where: { flight_id: flight.id },
+    });
+
+    if (!found) throw new Error('Error fetching from view');
+
+    return found.max_weight;
+  }
+
+  public async getLuggagePassengers(
+    gateId: number,
+    dto: GetAvailableLuggageDto,
+  ) {
+    const { flightId } = dto;
+
+    const flight = await this.flightsRepo.getFlight(flightId);
+
+    const gate = await this.gateRepo.getGate(gateId);
+
+    const tickets = await this.getRegisteredTickets(gate.id);
+
+    const luggages = await this.luggageRepo.find();
+
+    const filteredPassengers: Users[] = tickets
+      .filter(
+        (t) =>
+          t.ticket.flight.id === flight.id &&
+          !luggages.some((l) => l.ticket.id === t.ticket.id),
+      )
+      .map((t) => t.ticket.passenger);
+
+    return filteredPassengers;
   }
 
   public async getSuggestion(gateId: number, suggestion: SuggestionDto) {
@@ -194,13 +238,9 @@ export class GatesService {
   public async registerLuggage(luggageDto: CreateLuggageDto) {
     const { weight, status, passengerId, ticketId } = luggageDto;
 
-    const ticket = await this.ticketRepo.getTicket(ticketId);
-
-    if (!ticket) {
-      throw new NotFoundException('Ticket is not found');
-    }
-
-    const registered = await this.registerTicketRepo.getTicket(ticketId);
+    const registered = await this.registerTicketRepo.findOne({
+      where: { id: ticketId },
+    });
 
     if (!registered) {
       throw new NotFoundException('Ticket is not registered yet');

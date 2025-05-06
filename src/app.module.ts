@@ -17,7 +17,6 @@ import { Airlines } from './airlines/entities/Airlines.entity';
 import { FlightPrices } from './flights/entities/FlightPrices.entity';
 import { Terminals } from './terminals/entities/Terminals.entity';
 import { Roles } from 'src/users/entities/Roles.entity';
-import { UserRoles } from './users/user_role.enum';
 import { AircraftModels } from './airlines/entities/AircraftModels.entity';
 import { FlightAvailability } from './flights/entities/available_flights.view.entity';
 import { Airports } from './flights/entities/Airports.entity';
@@ -26,6 +25,13 @@ import { Registration } from './gates/entities/Registration.entity';
 import { GateWorkload } from './stats/entities/GateWorkloads.entity';
 import { MonthlyFlightStats } from './stats/entities/MonthlyFlightStats.entity';
 import { StatsModule } from './stats/stats.module';
+import { MaxWeight } from './flights/entities/MaxWeight.view.entity';
+import { LuggagePerMonth } from './stats/entities/LuggagePerMonth.view.entity';
+import { MostPopularArrivingRoutes } from './stats/entities/MostPopularArrivingRoutes.view.entity';
+import { MostPopularDepartingRoutes } from './stats/entities/MostPopularDepartingRoutes.view.entity';
+import { ActiveUsersByRole } from './stats/entities/ActiveUsersByRole.view.entity';
+import { TopBuyingDays } from './stats/entities/TopBuying.view.entity';
+import { TopAirports } from './stats/entities/TopAirports.view.entity';
 
 @Module({
   imports: [
@@ -62,6 +68,13 @@ import { StatsModule } from './stats/stats.module';
           Registration,
           GateWorkload,
           MonthlyFlightStats,
+          MaxWeight,
+          LuggagePerMonth,
+          MostPopularArrivingRoutes,
+          MostPopularDepartingRoutes,
+          ActiveUsersByRole,
+          TopBuyingDays,
+          TopAirports,
         ],
         synchronize: false,
       }),

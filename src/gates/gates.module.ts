@@ -21,6 +21,7 @@ import { FlightsSeatsRepository } from 'src/flights/repositories/flight_seats.re
 import { WeatherService } from 'src/weather-api/weather.service';
 import { WeatherModule } from 'src/weather-api/weather.module';
 import { Registration } from './entities/Registration.entity';
+import { MaxWeight } from 'src/flights/entities/MaxWeight.view.entity';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { Registration } from './entities/Registration.entity';
       Users,
       FlightSeats,
       Registration,
+      MaxWeight,
     ]),
     WeatherModule,
   ],

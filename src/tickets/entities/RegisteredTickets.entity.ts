@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Luggages } from 'src/luggage/entities/Luggages.entity';
@@ -22,8 +23,8 @@ export class RegisteredTickets {
   @Column('timestamp without time zone', { name: 'registered_at' })
   registeredAt: Date;
 
-  @OneToMany(() => Luggages, (luggages) => luggages.ticket)
-  luggages: Luggages[];
+  @OneToOne(() => Luggages, (luggages) => luggages.ticket)
+  luggage: Luggages;
 
   @ManyToOne(() => Users, (users) => users.registeredTickets)
   @JoinColumn([{ name: 'registered_by', referencedColumnName: 'id' }])

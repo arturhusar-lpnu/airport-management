@@ -4,6 +4,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Users } from 'src/users/entities/Users.entity';
@@ -28,9 +29,9 @@ export class Luggages {
   @JoinColumn([{ name: 'passenger_id', referencedColumnName: 'id' }])
   passenger: Users;
 
-  @ManyToOne(
+  @OneToOne(
     () => RegisteredTickets,
-    (registeredTickets) => registeredTickets.luggages,
+    (registeredTickets) => registeredTickets.luggage,
   )
   @JoinColumn([{ name: 'ticket_id', referencedColumnName: 'id' }])
   ticket: RegisteredTickets;
