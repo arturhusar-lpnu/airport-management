@@ -21,6 +21,7 @@ export class GatesRepository extends Repository<Gates> {
     }
 
     query.leftJoinAndSelect('gates.terminal', 'terminals');
+    query.leftJoinAndSelect('gates.flights', 'flights');
     return await query.getMany();
   }
 
@@ -41,7 +42,7 @@ export class GatesRepository extends Repository<Gates> {
   }
 
   public async getGate(id: number): Promise<Gates> {
-    const found = await this.findOne({ where: { id } });
+    const found = await this.findOne({ where: { id }, relations: ['flights'] });
 
     if (!found) throw new NotFoundException(`Gate with id ${id} was not found`);
 
