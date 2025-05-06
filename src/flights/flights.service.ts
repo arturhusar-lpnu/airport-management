@@ -58,7 +58,10 @@ export class FlightsService {
     await AppDataSource.transaction(async (manager) => {
       flight.gate = gate;
       await manager.save(flight);
-      await manager.query('CALL update_gate_workloads();');
+      const scheduleDate = new Date(flight.scheduleTime)
+        .toISOString()
+        .split('T')[0];
+      await manager.query('CALL update_gate_workloads($1);', [scheduleDate]);
     });
 
     return flight;
